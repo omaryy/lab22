@@ -1,0 +1,433 @@
+package eg.edu.alexu.csd.filestructure;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Random;
+
+import javax.management.RuntimeErrorException;
+
+import org.junit.Assert;
+public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T, V>{
+	 private INode root=null;
+	  private INode TNULL;
+	int size=0;
+	public RedBlacTree ()
+	{
+		  TNULL = new Node();
+		    TNULL.setColor(true); 
+		    TNULL.setLeftChild(null); 
+		    TNULL.setRightChild(null); 
+		    root = TNULL;
+	}
+
+	@Override
+	public INode<T, V> getRoot() {
+		
+				return root;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return size==0;
+	}
+
+	@Override
+	public void clear() {
+		
+		 root=null;
+	  size=0;
+		
+	}
+
+	@Override
+	public V search(T key) {
+		if (key ==null){
+			throw new RuntimeErrorException(null);
+			}
+		  return  (V) searchTreeHelper(getRoot(), key).getValue();
+	}
+	public INode  search2(T key) {
+		if (key ==null){
+			throw new RuntimeErrorException(null);
+			}
+		  return   searchTreeHelper(getRoot(), key);
+	}
+	
+	private INode searchTreeHelper(INode iNode, T key) {
+	
+	
+	    if (iNode == TNULL || key.compareTo((T) iNode.getKey())==0) {
+	    	
+	      return iNode;
+	    }
+
+	    if (key.compareTo((T) iNode.getKey())<0) {
+	      return searchTreeHelper( iNode.getLeftChild(), key);
+	    }
+	    return searchTreeHelper(iNode.getRightChild(), key);
+	  }
+	@Override
+	public boolean contains(T key) {
+		if (key ==null){
+			throw new RuntimeErrorException(null);
+			}
+		if(search2(key).getKey()==null)
+		{
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+
+	 public void insert(T key, V value) {
+		size++;
+	  if(contains(key))
+	  {
+		 search2(key).setValue(value);
+		 search2(key).setKey(key);
+	  }
+	  else {
+	    Node node = new Node();
+	
+	   
+	    node.setParent(null);
+	    node.setKey(key);
+	    node.setValue(value);
+	    node.setLeftChild(TNULL);
+	    node.setRightChild(TNULL);
+	    node.setColor(false);
+	    INode y = null;
+	    if(this.root==null)
+	    {
+	    	this.root=node;
+	    	root.setColor(true);
+	    }
+	    else { 
+	    INode x = this.root;
+
+	    while (x != TNULL) {
+	      y = x;
+	      if (node.getKey().compareTo( x.getKey())<0) {
+	        x =  x.getLeftChild();
+	      } else {
+	        x = x.getRightChild();
+	      }
+	    }
+
+	    node.setParent(y);
+	    if (y == null) {
+	      root = node;
+	    } else if (node.getKey().compareTo( y.getKey())<0) {
+	      y.setLeftChild(node);
+	    } else {
+	      y.setRightChild(node); 
+	    }
+
+	    if (node.getParent() == null) {
+	      node.setColor(true); 
+	      return;
+	    }
+
+	    if (node.getParent().getParent() == null) {
+	      return;
+	    }
+
+	    fixTree(node);
+	    }
+	    
+	  }
+	  }
+
+	private void fixTree(INode k) {
+	
+		 INode u;
+		    while (k.getParent().getColor() == false) {
+		      if (k.getParent() == k.getParent().getParent().getRightChild()) {
+		        u = k.getParent().getParent().getLeftChild();
+		        if (u.getColor()== false) {
+		          u.setColor(true); 
+		          k.getParent().setColor(true);
+		          k.getParent().getParent().setColor(false);
+		          k = k.getParent().getParent();
+		        } else {
+		          if (k == k.getParent().getLeftChild()) {
+		            k = k.getParent();
+		            rotateRight(k);
+		          }
+		          k.getParent().setColor(true); 
+		          k.getParent().getParent().setColor(false);
+		          rotateLeft(k.getParent().getParent());
+		        }
+		      } else {
+		        u = k.getParent().getParent().getRightChild();
+
+		        if (u.getColor() == false) {
+		          u.setColor(true); 
+		          k.getParent().setColor(true); 
+		          k.getParent().getParent().setColor(false);
+		          k = k.getParent().getParent();
+		        } else {
+		          if (k == k.getParent().getRightChild()) {
+		            k = k.getParent();
+		            rotateLeft(k);
+		          }
+		          k.getParent().setColor(true);
+		          k.getParent().getParent().setColor(false); 
+		          rotateRight(k.getParent().getParent());
+		        }
+		      }
+		      if (k == root) {
+		        break;
+		      }
+		    }
+		    root.setColor(true); 
+    }
+	
+	void rotateLeft(INode node) {
+        if (node.getParent() != null) {
+            if (node == node.getParent().getLeftChild()) {
+                node.getParent().setLeftChild(node.getRightChild()); 
+            } else {
+                node.getParent().setRightChild(node.getRightChild()); 
+            }
+            node.getRightChild().setParent(node.getParent()); 
+            node.setParent(node.getRightChild());
+            if (node.getRightChild().getLeftChild() != null) {
+                node.getRightChild().getLeftChild().setParent(node); 
+            }
+            node.setRightChild(node.getRightChild().getLeftChild());
+            node.getParent().setLeftChild(node); 
+        } else {//Need to rotate root
+            INode right =  root.getRightChild();
+            root.setRightChild(right.getLeftChild()); 
+            right.getLeftChild().setParent(root);
+            root.setParent(right); 
+            right.setLeftChild(root);
+            right.setParent(null); 
+            root = (Node) right;
+        }
+    }
+
+    void rotateRight(INode node) {
+        if (node.getParent() != null) {
+            if (node == node.getParent().getLeftChild()) {
+                node.getParent().setLeftChild(node.getLeftChild()); 
+            } else {
+                node.getParent().setRightChild(node.getLeftChild()); 
+            }
+
+            node.getLeftChild().setParent(node.getParent());
+            node.setParent(node.getLeftChild());
+            if (node.getLeftChild().getRightChild() != null) {
+                node.getLeftChild().getRightChild().setParent(node); 
+            }
+            node.setLeftChild(node.getLeftChild().getRightChild()); 
+            node.getParent().setRightChild(node);
+        } else {//Need to rotate root
+            INode left = root.getLeftChild();
+            root.setLeftChild(root.getLeftChild().getRightChild());
+            left.getRightChild().setParent(root) ;
+            root.setParent(left); 
+            left.setRightChild(root);
+            left.setParent(null); 
+            root = (Node) left;
+        }
+    }
+    public void printTree(INode iNode) {
+        if (iNode == null) {
+            return;
+        }
+        printTree( iNode.getLeftChild());
+       System.out.println(iNode.getKey());
+        printTree( iNode.getRightChild());
+    }
+    public void prettyPrint() {
+        printHelper(this.root, "", true);
+      }
+
+
+
+    private void printHelper(INode iNode, String indent, boolean last) {
+        if (iNode != TNULL) {
+          System.out.print(indent);
+          if (last) {
+            System.out.print("R----");
+            indent += "   ";
+          } else {
+            System.out.print("L----");
+            indent += "|  ";
+          }
+
+          String sColor = iNode.getColor() == false ? "RED" : "BLACK";
+          System.out.println(iNode.getKey() + "(" + sColor + ")");
+          printHelper(iNode.getLeftChild(), indent, false);
+          printHelper(iNode.getRightChild(), indent, true);
+        }
+      }
+
+	@Override
+	public boolean delete(T key) {
+		if (key ==null){
+			throw new RuntimeErrorException(null);
+			}
+		
+		if(contains(key)==false)
+		{
+			return false;
+		}
+
+		else {
+			size--;
+		return deleteNodeHelper(root, key);
+	
+		}
+		
+	}
+	private boolean deleteNodeHelper(INode root2, T key) {
+
+	    INode z = TNULL;
+	    Node x=new Node();
+		Node y=new Node();
+	    while (root2 != TNULL) {
+	      if (root2.getKey() == key) {
+	        z =  root2;
+	       
+	      }
+
+	      if (root2.getKey().compareTo(key)<=0){
+	        root2 = (Node) root2.getRightChild();
+
+	       
+	      } else {
+	        root2 = (Node) root2.getLeftChild();
+	        
+	      }
+	    }
+
+	    if (z == TNULL) {
+	      
+	      return false;
+	    }
+
+	    y = (Node) z;
+	    boolean yOriginalColor = y.getColor();
+	    if (z.getLeftChild() == TNULL) {
+	      x = (Node) z.getRightChild();
+	
+	      rbTransplant(z, z.getRightChild());
+	    } else if (z.getRightChild() == TNULL) {
+	      x = (Node) z.getLeftChild();
+	      rbTransplant(z, z.getLeftChild());
+	    } else {
+	      y = (Node) minimum(z.getRightChild());
+	      yOriginalColor = y.getColor();
+	      x = (Node) y.getRightChild();
+	      if (y.getParent() == z&&y!=null&&x!=null) {
+	        x.setParent(y); 
+	      } else {
+	        rbTransplant(y, y.getRightChild());
+	        y.setRightChild(z.getRightChild()); 
+	        y.getRightChild().setParent(y); 
+	      }
+
+	      rbTransplant(z, y);
+	      y.setLeftChild(z.getLeftChild()); 
+	      y.getLeftChild().setParent(y);
+	      y.setColor(z.getColor());
+	    }
+	    if (yOriginalColor == true) {
+	      fixDelete(x);
+	    }
+	    return true;
+		
+	  }
+
+
+	private void rbTransplant(INode z, INode y) {
+		 
+	    if (z.getParent() == null) {
+	      root = y;
+	    } else if (z == z.getParent().getLeftChild()) {
+	      z.getParent().setLeftChild(y); 
+	    } else {
+	      z.getParent().setRightChild(y); 
+	    }
+	    
+	    y.setParent(z.getParent());
+
+	  }
+	private void fixDelete(INode x) {
+	    INode s;
+	    while (x != root && x.getColor() == true) {
+	      if (x == x.getParent().getLeftChild()) {
+	        s = x.getParent().getRightChild();
+	        if (s.getColor() == false) {
+	          s.setColor(true); 
+	          x.getParent().setColor(false); 
+	          rotateLeft(x.getParent());
+	          s = x.getParent().getRightChild();
+	        }
+
+	        if (s.getLeftChild().getColor() == true && s.getRightChild().getColor() == true) {
+	          s.setColor(false);
+	          x = x.getParent();
+	        } else {
+	          if (s.getRightChild().getColor() == true) {
+	            s.getLeftChild().setColor(true); 
+	            s.setColor(false); 
+	            rotateRight(s);
+	            s = x.getParent().getRightChild();
+	          }
+
+	          s.setColor(x.getParent().getColor()); 
+	          x.getParent().setColor(true);
+	          s.getRightChild().setColor(true); 
+	          rotateLeft(x.getParent());
+	          x = root;
+	        }
+	      } else {
+	        s = x.getParent().getLeftChild();
+	        if (s.getColor() == false) {
+	          s.setColor(true);
+	          x.getParent().setColor(false); 
+	          rotateRight(x.getParent());
+	          s = x.getParent().getLeftChild();
+	        }
+
+	        if (s.getRightChild().getColor() == true && s.getRightChild().getColor() == true) {
+	          s.setColor(false);
+	          x = x.getParent();
+	        } else {
+	          if (s.getLeftChild().getColor() == true) {
+	            s.getRightChild().setColor(true); 
+	            s.setColor(false);
+	            rotateLeft(s);
+	            s = x.getParent().getLeftChild();
+	          }
+
+	          s.setColor(x.getParent().getColor());
+	          x.getParent().setColor(true);
+	          s.getLeftChild().setColor(true);
+	          rotateRight(x.getParent());
+	          x = root;
+	        }
+	      }
+	    }
+	    x.setColor(true); 
+	  }
+	 public INode minimum(INode node) {
+		    while (node.getLeftChild() != TNULL) {
+		      node = node.getLeftChild();
+		    }
+		    return node;
+		  }
+
+		  public INode maximum(INode node) {
+		    while (node.getRightChild() != TNULL) {
+		      node = node.getRightChild();
+		    }
+		    return node;
+		  }
+		 
+
+}
