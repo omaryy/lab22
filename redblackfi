@@ -1,18 +1,14 @@
-package eg.edu.alexu.csd.filestructure;
+package eg.edu.alexu.csd.filestructure.redblacktree;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Random;
 
 import javax.management.RuntimeErrorException;
-
-import org.junit.Assert;
-public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T, V>{
-	 private INode root=null;
-	  private INode TNULL;
+public class red_black<T extends Comparable<T>,V>  implements IRedBlackTree<T, V>{
+	 private INode<T,V> root=null;
+	  private INode<T,V> TNULL;
 	int size=0;
-	public RedBlacTree ()
+	public red_black ()
 	{
-		  TNULL = new Node();
+		  TNULL = new Node<T,V>();
 		    TNULL.setColor(true); 
 		    TNULL.setLeftChild(null); 
 		    TNULL.setRightChild(null); 
@@ -33,7 +29,7 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 	@Override
 	public void clear() {
 		
-		 root=null;
+	 root=null;
 	  size=0;
 		
 	}
@@ -43,24 +39,24 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 		if (key ==null){
 			throw new RuntimeErrorException(null);
 			}
-		  return  (V) searchTreeHelper(getRoot(), key).getValue();
+		  return    searchTreeHelper(root, key).getValue();
 	}
-	public INode  search2(T key) {
+	public INode<T,V>  search2(T key) {
 		if (key ==null){
 			throw new RuntimeErrorException(null);
 			}
 		  return   searchTreeHelper(getRoot(), key);
 	}
 	
-	private INode searchTreeHelper(INode iNode, T key) {
+	private INode<T,V> searchTreeHelper(INode<T,V> iNode, T key) {
 	
 	
-	    if (iNode == TNULL || key.compareTo((T) iNode.getKey())==0) {
+	    if (iNode == TNULL || key.compareTo(iNode.getKey())==0) {
 	    	
 	      return iNode;
 	    }
 
-	    if (key.compareTo((T) iNode.getKey())<0) {
+	    if (key.compareTo( iNode.getKey())<0) {
 	      return searchTreeHelper( iNode.getLeftChild(), key);
 	    }
 	    return searchTreeHelper(iNode.getRightChild(), key);
@@ -80,31 +76,30 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 	@Override
 
 	 public void insert(T key, V value) {
+		if(key==null || value==null) {
+			throw  new RuntimeErrorException(null);
+		}
+		 INode<T, V> node = new Node<>(key,value,true); 
+		    node.setParent(null);
+		    node.setLeftChild(TNULL);
+		    node.setRightChild(TNULL);
 		size++;
+		 INode <T,V>y = null;
+		    if(this.root==null)
+		    {
+		    	this.root=node;
+		    	root.setColor(false);  
+		    }
+		    else { 
 	  if(contains(key))
 	  {
 		 search2(key).setValue(value);
-		 search2(key).setKey(key);
+		 //size--;
+		 return;
+		 //search2(key).setKey(key);
 	  }
 	  else {
-	    Node node = new Node();
-	
-	   
-	    node.setParent(null);
-	    node.setKey(key);
-	    node.setValue(value);
-	    node.setLeftChild(TNULL);
-	    node.setRightChild(TNULL);
-	    node.setColor(false);
-	    INode y = null;
-	    if(this.root==null)
-	    {
-	    	this.root=node;
-	    	root.setColor(true);
-	    }
-	    else { 
-	    INode x = this.root;
-
+	    INode<T, V> x = this.root;
 	    while (x != TNULL) {
 	      y = x;
 	      if (node.getKey().compareTo( x.getKey())<0) {
@@ -124,7 +119,7 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 	    }
 
 	    if (node.getParent() == null) {
-	      node.setColor(true); 
+	      node.setColor(false);              
 	      return;
 	    }
 
@@ -138,41 +133,41 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 	  }
 	  }
 
-	private void fixTree(INode k) {
+	private void fixTree(INode<T,V> k) {
 	
-		 INode u;
-		    while (k.getParent().getColor() == false) {
+		 INode<T, V> u;
+		    while (k.getParent().getColor() == true) {      
 		      if (k.getParent() == k.getParent().getParent().getRightChild()) {
 		        u = k.getParent().getParent().getLeftChild();
-		        if (u.getColor()== false) {
-		          u.setColor(true); 
-		          k.getParent().setColor(true);
-		          k.getParent().getParent().setColor(false);
+		        if (u.getColor()== true) {  
+		          u.setColor(false);   
+		          k.getParent().setColor(false); 
+		          k.getParent().getParent().setColor(true); 
 		          k = k.getParent().getParent();
 		        } else {
 		          if (k == k.getParent().getLeftChild()) {
 		            k = k.getParent();
 		            rotateRight(k);
 		          }
-		          k.getParent().setColor(true); 
-		          k.getParent().getParent().setColor(false);
+		          k.getParent().setColor(false);   
+		          k.getParent().getParent().setColor(true);  
 		          rotateLeft(k.getParent().getParent());
 		        }
 		      } else {
 		        u = k.getParent().getParent().getRightChild();
 
-		        if (u.getColor() == false) {
-		          u.setColor(true); 
-		          k.getParent().setColor(true); 
-		          k.getParent().getParent().setColor(false);
+		        if (u.getColor() == true) {    
+		          u.setColor(false);   
+		          k.getParent().setColor(false); 
+		          k.getParent().getParent().setColor(true); 
 		          k = k.getParent().getParent();
 		        } else {
 		          if (k == k.getParent().getRightChild()) {
 		            k = k.getParent();
 		            rotateLeft(k);
 		          }
-		          k.getParent().setColor(true);
-		          k.getParent().getParent().setColor(false); 
+		          k.getParent().setColor(false);  
+		          k.getParent().getParent().setColor(true); 
 		          rotateRight(k.getParent().getParent());
 		        }
 		      }
@@ -180,10 +175,10 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 		        break;
 		      }
 		    }
-		    root.setColor(true); 
+		    root.setColor(false);  
     }
 	
-	void rotateLeft(INode node) {
+	void rotateLeft(INode<T,V> node) {
         if (node.getParent() != null) {
             if (node == node.getParent().getLeftChild()) {
                 node.getParent().setLeftChild(node.getRightChild()); 
@@ -198,17 +193,17 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
             node.setRightChild(node.getRightChild().getLeftChild());
             node.getParent().setLeftChild(node); 
         } else {//Need to rotate root
-            INode right =  root.getRightChild();
+            INode<T, V> right =  root.getRightChild();
             root.setRightChild(right.getLeftChild()); 
             right.getLeftChild().setParent(root);
             root.setParent(right); 
             right.setLeftChild(root);
             right.setParent(null); 
-            root = (Node) right;
+            root = right;
         }
     }
 
-    void rotateRight(INode node) {
+    void rotateRight(INode<T,V> node) {
         if (node.getParent() != null) {
             if (node == node.getParent().getLeftChild()) {
                 node.getParent().setLeftChild(node.getLeftChild()); 
@@ -224,16 +219,16 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
             node.setLeftChild(node.getLeftChild().getRightChild()); 
             node.getParent().setRightChild(node);
         } else {//Need to rotate root
-            INode left = root.getLeftChild();
+            INode<T,V> left = root.getLeftChild();
             root.setLeftChild(root.getLeftChild().getRightChild());
             left.getRightChild().setParent(root) ;
             root.setParent(left); 
             left.setRightChild(root);
             left.setParent(null); 
-            root = (Node) left;
+            root =  left;
         }
     }
-    public void printTree(INode iNode) {
+    public void printTree(INode<T,V> iNode) {
         if (iNode == null) {
             return;
         }
@@ -242,12 +237,12 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
         printTree( iNode.getRightChild());
     }
     public void prettyPrint() {
-        printHelper(this.root, "", true);
+        printHelper(this.root, "", false);    
       }
 
 
 
-    private void printHelper(INode iNode, String indent, boolean last) {
+    private void printHelper(INode<T,V> iNode, String indent, boolean last) {
         if (iNode != TNULL) {
           System.out.print(indent);
           if (last) {
@@ -258,10 +253,10 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
             indent += "|  ";
           }
 
-          String sColor = iNode.getColor() == false ? "RED" : "BLACK";
+          String sColor = iNode.getColor() == true ? "RED" : "BLACK";  
           System.out.println(iNode.getKey() + "(" + sColor + ")");
-          printHelper(iNode.getLeftChild(), indent, false);
-          printHelper(iNode.getRightChild(), indent, true);
+          printHelper(iNode.getLeftChild(), indent, true);  
+          printHelper(iNode.getRightChild(), indent, false);  
         }
       }
 
@@ -271,7 +266,7 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 			throw new RuntimeErrorException(null);
 			}
 		
-		if(contains(key)==false)
+		if(contains(key)==false)   
 		{
 			return false;
 		}
@@ -283,11 +278,11 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 		}
 		
 	}
-	private boolean deleteNodeHelper(INode root2, T key) {
+	private boolean deleteNodeHelper(INode<T,V> root2, T key) {
 
-	    INode z = TNULL;
-	    Node x=new Node();
-		Node y=new Node();
+	    INode<T, V> z = TNULL;
+	    INode<T, V> x;
+		INode<T, V> y;
 	    while (root2 != TNULL) {
 	      if (root2.getKey() == key) {
 	        z =  root2;
@@ -295,11 +290,11 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 	      }
 
 	      if (root2.getKey().compareTo(key)<=0){
-	        root2 = (Node) root2.getRightChild();
+	        root2 =  root2.getRightChild();
 
 	       
 	      } else {
-	        root2 = (Node) root2.getLeftChild();
+	        root2 =  root2.getLeftChild();
 	        
 	      }
 	    }
@@ -309,19 +304,19 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 	      return false;
 	    }
 
-	    y = (Node) z;
+	    y =  z;
 	    boolean yOriginalColor = y.getColor();
 	    if (z.getLeftChild() == TNULL) {
-	      x = (Node) z.getRightChild();
+	      x =  z.getRightChild();
 	
 	      rbTransplant(z, z.getRightChild());
 	    } else if (z.getRightChild() == TNULL) {
-	      x = (Node) z.getLeftChild();
+	      x =  z.getLeftChild();
 	      rbTransplant(z, z.getLeftChild());
 	    } else {
-	      y = (Node) minimum(z.getRightChild());
+	      y =  minimum(z.getRightChild());
 	      yOriginalColor = y.getColor();
-	      x = (Node) y.getRightChild();
+	      x =  y.getRightChild();
 	      if (y.getParent() == z&&y!=null&&x!=null) {
 	        x.setParent(y); 
 	      } else {
@@ -335,15 +330,15 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 	      y.getLeftChild().setParent(y);
 	      y.setColor(z.getColor());
 	    }
-	    if (yOriginalColor == true) {
+	    if (yOriginalColor == true) {   
 	      fixDelete(x);
 	    }
-	    return true;
+	    return false;  
 		
 	  }
 
 
-	private void rbTransplant(INode z, INode y) {
+	private void rbTransplant(INode<T, V> z, INode<T, V> y) {
 		 
 	    if (z.getParent() == null) {
 	      root = y;
@@ -356,58 +351,58 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 	    y.setParent(z.getParent());
 
 	  }
-	private void fixDelete(INode x) {
-	    INode s;
-	    while (x != root && x.getColor() == true) {
+	private void fixDelete(INode<T, V> x) {
+	    INode<T, V> s;
+	    while (x != root && x.getColor() == false) { 
 	      if (x == x.getParent().getLeftChild()) {
 	        s = x.getParent().getRightChild();
-	        if (s.getColor() == false) {
-	          s.setColor(true); 
-	          x.getParent().setColor(false); 
+	        if (s.getColor() == true) {   
+	          s.setColor(false);     
+	          x.getParent().setColor(true); 
 	          rotateLeft(x.getParent());
 	          s = x.getParent().getRightChild();
 	        }
-
-	        if (s.getLeftChild().getColor() == true && s.getRightChild().getColor() == true) {
-	          s.setColor(false);
+	 
+	        if (s.getLeftChild().getColor() == false && s.getRightChild().getColor() == false) {
+	          s.setColor(true);  
 	          x = x.getParent();
 	        } else {
-	          if (s.getRightChild().getColor() == true) {
-	            s.getLeftChild().setColor(true); 
-	            s.setColor(false); 
+	          if (s.getRightChild().getColor() == false) {  
+	            s.getLeftChild().setColor(false);   
+	            s.setColor(true);    
 	            rotateRight(s);
 	            s = x.getParent().getRightChild();
 	          }
 
 	          s.setColor(x.getParent().getColor()); 
-	          x.getParent().setColor(true);
-	          s.getRightChild().setColor(true); 
+	          x.getParent().setColor(false);   
+	          s.getRightChild().setColor(false);  
 	          rotateLeft(x.getParent());
 	          x = root;
-	        }
+	      }
 	      } else {
 	        s = x.getParent().getLeftChild();
-	        if (s.getColor() == false) {
-	          s.setColor(true);
-	          x.getParent().setColor(false); 
+	        if (s.getColor() == true) {  
+	          s.setColor(false); 
+	          x.getParent().setColor(true);  
 	          rotateRight(x.getParent());
 	          s = x.getParent().getLeftChild();
 	        }
 
-	        if (s.getRightChild().getColor() == true && s.getRightChild().getColor() == true) {
-	          s.setColor(false);
+	        if (s.getRightChild().getColor() == false && s.getRightChild().getColor() == false) {
+	          s.setColor(true);  
 	          x = x.getParent();
 	        } else {
-	          if (s.getLeftChild().getColor() == true) {
-	            s.getRightChild().setColor(true); 
-	            s.setColor(false);
+	          if (s.getLeftChild().getColor() == false) {  
+	            s.getRightChild().setColor(false); 
+	            s.setColor(true);  
 	            rotateLeft(s);
 	            s = x.getParent().getLeftChild();
 	          }
 
 	          s.setColor(x.getParent().getColor());
-	          x.getParent().setColor(true);
-	          s.getLeftChild().setColor(true);
+	          x.getParent().setColor(false);   
+	          s.getLeftChild().setColor(false);  
 	          rotateRight(x.getParent());
 	          x = root;
 	        }
@@ -415,14 +410,14 @@ public class RedBlacTree<T extends Comparable<T>,V>  implements IRedBlackTree<T,
 	    }
 	    x.setColor(true); 
 	  }
-	 public INode minimum(INode node) {
+	 public INode<T,V> minimum(INode<T,V> node) {
 		    while (node.getLeftChild() != TNULL) {
 		      node = node.getLeftChild();
 		    }
 		    return node;
 		  }
 
-		  public INode maximum(INode node) {
+		  public INode<T,V> maximum(INode<T,V> node) {
 		    while (node.getRightChild() != TNULL) {
 		      node = node.getRightChild();
 		    }
